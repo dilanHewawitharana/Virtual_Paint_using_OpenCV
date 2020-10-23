@@ -32,11 +32,15 @@ def find_color():
         upper = np.array(color[3:6])
         mask = cv2.inRange(imgHSV, lower, upper)
         x, y = get_contours(mask)
-        cv2.circle(img_result, (x, y), 10, myColorsValue[count], cv2.FILLED)
+        cv2.circle(img_result, (x, y), 7, myColorsValue[count], cv2.FILLED)
         if x != 0 and y != 0:
             new_point.append([x, y, count])
         count += 1
     return new_point
+
+
+def sort_second(val):
+    return val[1]
 
 
 def get_contours(image):
@@ -44,21 +48,28 @@ def get_contours(image):
     x, y, w, h = 0, 0, 0, 0
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        # print(area)
         if area > 500:
-            cv2.drawContours(img_result, cnt, -1, (255, 0, 0), 3)
-            peri = cv2.arcLength(cnt, True)
-            # print(peri)
-            approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
-            # print(len(approx))
-            obj_cor = len(approx)
-            x, y, w, h = cv2.boundingRect(approx)
-    return x + w // 2, y
+            # cv2.drawContours(img_result, cnt, -1, (255, 0, 0), 3)
+
+            # Get corner point
+            rect = cv2.minAreaRect(cnt)
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+
+            # Sort based on second value of the list
+            box = sorted(box, key=sort_second)
+
+            # calculate the top position of pencil
+            x = (box[0][0] + box[1][0]) // 2
+            y = ((box[0][1] + box[1][1]) // 2) - 20
+    return x, y
 
 
 def draw_on_canvas():
-    for point in myPoint:
-        cv2.circle(img_result, (point[0], point[1]), 10, myColorsValue[point[2]], cv2.FILLED)
+
+    if len(myPoint) != 0:
+        for point in myPoint:
+            cv2.circle(img_result, (point[0], point[1]), 6, myColorsValue[point[2]], cv2.FILLED)
 
 
 while True:
@@ -70,9 +81,10 @@ while True:
         for new_p in new_point:
             myPoint.append(new_p)
 
-    if len(myPoint) != 0:
-        draw_on_canvas()
+    draw_on_canvas()
 
-    cv2.imshow('Video', img_result)
+    cv2.imshow('Video', cv2.flip(img_result, 1))
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+    if cv2.waitKey(1) & 0xFF == ord('c'):
+        myPoint.clear()
