@@ -5,3 +5,9 @@ Virtual Painting sample project using OpenCV and Python
 https://www.youtube.com/watch?v=WQeoO7MI0Bs&t=494s
 
 ## Content
+
+## Demo
+
+![Results](./sample.PNG)
+
+https://www.youtube.com/watch?v=AV1khp3Igiw
